@@ -461,4 +461,80 @@ class BaseBebopDrone {
     }ARDeviceControllerStreamListener getmStreamListener() {
         return mStreamListener;
     }
+
+    boolean hasController() {
+        return getmDeviceController() != null;
+    }
+
+    boolean isRunningArcController() {
+        return getmState().equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING);
+    }
+
+    ARFeatureARDrone3 getDroneController() {
+        return getmDeviceController().getFeatureARDrone3();
+    }
+
+    boolean hasRunningController() {
+        return (hasController()) && (isRunningArcController());
+    }
+
+    //region Listener functions
+    public void addListener(BebopDroneListener listener) {
+        getmListeners().add(listener);
+    }
+
+    public void removeListener(BebopDroneListener listener) {
+        getmListeners().remove(listener);
+    }
+    //endregion Listener
+
+    /**
+     * Connect to the drone
+     * @return true if operation was successful.
+     *              Returning true doesn't mean that device is connected.
+     *              You can be informed of the actual connection through {@link BebopDroneListener#onDroneConnectionChanged}
+     */
+    public boolean connect() {
+        boolean success = false;
+        if ((hasController()) && (ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED.equals(getmState()))) {
+            ARCONTROLLER_ERROR_ENUM error = getmDeviceController().start();
+            if (error == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
+                success = true;
+            }
+        }
+        return success;
+    }
+
+    /**
+     * Disconnect from the drone
+     * @return true if operation was successful.
+     *              Returning true doesn't mean that device is disconnected.
+     *              You can be informed of the actual disconnection through {@link BebopDroneListener#onDroneConnectionChanged}
+     */
+    public boolean disconnect() {
+        boolean success = false;
+        if ((hasController()) && (ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING.equals(getmState()))) {
+            ARCONTROLLER_ERROR_ENUM error = getmDeviceController().stop();
+            if (error == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
+                success = true;
+            }
+        }
+        return success;
+    }
+
+    /**
+     * Get the current connection state
+     * @return the connection state of the drone
+     */
+    public ARCONTROLLER_DEVICE_STATE_ENUM getConnectionState() {
+        return getmState();
+    }
+
+    /**
+     * Get the current flying state
+     * @return the flying state
+     */
+    public ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM getFlyingState() {
+        return getmFlyingState();
+    }
 }
