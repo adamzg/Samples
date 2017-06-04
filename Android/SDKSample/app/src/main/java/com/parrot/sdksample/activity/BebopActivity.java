@@ -19,6 +19,7 @@ import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 import com.parrot.sdksample.R;
 import com.parrot.sdksample.drone.BebopDrone;
+import com.parrot.sdksample.drone.BebopDroneListener;
 import com.parrot.sdksample.view.BebopVideoView;
 
 public class BebopActivity extends AppCompatActivity {
@@ -340,7 +341,7 @@ public class BebopActivity extends AppCompatActivity {
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
     }
 
-    private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
+    private final BebopDroneListener mBebopListener = new BebopDroneListener() {
         @Override
         public void onDroneConnectionChanged(ARCONTROLLER_DEVICE_STATE_ENUM state) {
             switch (state)
