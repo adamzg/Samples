@@ -22,6 +22,9 @@ import com.parrot.sdksample.drone.BebopDrone;
 import com.parrot.sdksample.drone.BebopDroneListener;
 import com.parrot.sdksample.view.BebopVideoView;
 
+/**
+ * Controls interactions with the UI
+ */
 public class BebopActivity extends AppCompatActivity {
     private static final String TAG = "BebopActivity";
     private BebopDrone mBebopDrone;
@@ -57,19 +60,26 @@ public class BebopActivity extends AppCompatActivity {
         super.onStart();
 
         // show a loading view while the bebop drone is connecting
-        if ((mBebopDrone != null) && !(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING.equals(mBebopDrone.getConnectionState())))
+        if (isConnecting())
         {
-            mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
-            mConnectionProgressDialog.setIndeterminate(true);
-            mConnectionProgressDialog.setMessage("Connecting ...");
-            mConnectionProgressDialog.setCancelable(false);
-            mConnectionProgressDialog.show();
-
+            showConnectingProress();
             // if the connection to the Bebop fails, finish the activity
             if (!mBebopDrone.connect()) {
                 finish();
             }
         }
+    }
+
+    void showConnectingProress() {
+        mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
+        mConnectionProgressDialog.setIndeterminate(true);
+        mConnectionProgressDialog.setMessage("Connecting ...");
+        mConnectionProgressDialog.setCancelable(false);
+        mConnectionProgressDialog.show();
+    }
+
+    boolean isConnecting() {
+        return (mBebopDrone != null) && !(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING.equals(mBebopDrone.getConnectionState()));
     }
 
     @Override
@@ -95,224 +105,37 @@ public class BebopActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void initIHM() {
-        mVideoView = (BebopVideoView) findViewById(R.id.videoView);
+    void initIHM() {
+        mapVideoViewButton();
 
-        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.emergency();
-            }
-        });
+        mapEmergencyButton();
 
-        mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
-        mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                switch (mBebopDrone.getFlyingState()) {
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED:
-                        mBebopDrone.takeOff();
-                        break;
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING:
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING:
-                        mBebopDrone.land();
-                        break;
-                    default:
-                }
-            }
-        });
+        mapTakeoffLandButton();
 
-        findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.takePicture();
-            }
-        });
+        mapTakePictureButton();
 
-        mDownloadBt = (Button)findViewById(R.id.downloadBt);
-        mDownloadBt.setEnabled(false);
-        mDownloadBt.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.getLastFlightMedias();
+        mapDownloadButton();
 
-                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
-                mDownloadProgressDialog.setIndeterminate(true);
-                mDownloadProgressDialog.setMessage("Fetching medias");
-                mDownloadProgressDialog.setCancelable(false);
-                mDownloadProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mBebopDrone.cancelGetLastFlightMedias();
-                    }
-                });
-                mDownloadProgressDialog.show();
-            }
-        });
+        mapUpButton();
 
-        findViewById(R.id.gazUpBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setGaz((byte) 50);
-                        break;
+        mapDownButton();
 
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setGaz((byte) 0);
-                        break;
+        mapYawLeftButton();
 
-                    default:
+        mapYawRightButton();
 
-                        break;
-                }
+        mapForwardButton();
 
-                return true;
-            }
-        });
+        mapBackButton();
 
-        findViewById(R.id.gazDownBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setGaz((byte) -50);
-                        break;
+        mapRollLeftButton();
 
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setGaz((byte) 0);
-                        break;
+        mapRollRightButton();
 
-                    default:
+        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
+    }
 
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.yawLeftBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setYaw((byte) -50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setYaw((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.yawRightBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setYaw((byte) 50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setYaw((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.forwardBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setPitch((byte) 50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setPitch((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.backBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setPitch((byte) -50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setPitch((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.rollLeftBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setRoll((byte) -50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setRoll((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
+    private void mapRollRightButton() {
         findViewById(R.id.rollRightBt).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -337,8 +160,247 @@ public class BebopActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
 
-        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
+    private void mapRollLeftButton() {
+        findViewById(R.id.rollLeftBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setRoll((byte) -50);
+                        mBebopDrone.setFlag((byte) 1);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setRoll((byte) 0);
+                        mBebopDrone.setFlag((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapBackButton() {
+        findViewById(R.id.backBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setPitch((byte) -50);
+                        mBebopDrone.setFlag((byte) 1);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setPitch((byte) 0);
+                        mBebopDrone.setFlag((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    private void mapForwardButton() {
+        findViewById(R.id.forwardBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setPitch((byte) 50);
+                        mBebopDrone.setFlag((byte) 1);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setPitch((byte) 0);
+                        mBebopDrone.setFlag((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapYawRightButton() {
+        findViewById(R.id.yawRightBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setYaw((byte) 50);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setYaw((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapYawLeftButton() {
+        findViewById(R.id.yawLeftBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setYaw((byte) -50);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setYaw((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapDownButton() {
+        findViewById(R.id.gazDownBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setGaz((byte) -50);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setGaz((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapUpButton() {
+        findViewById(R.id.gazUpBt).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        v.setPressed(true);
+                        mBebopDrone.setGaz((byte) 50);
+                        break;
+
+                    case MotionEvent.ACTION_UP:
+                        v.setPressed(false);
+                        mBebopDrone.setGaz((byte) 0);
+                        break;
+
+                    default:
+
+                        break;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    void mapDownloadButton() {
+        mDownloadBt = (Button)findViewById(R.id.downloadBt);
+        mDownloadBt.setEnabled(false);
+        mDownloadBt.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.getLastFlightMedias();
+
+                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
+                mDownloadProgressDialog.setIndeterminate(true);
+                mDownloadProgressDialog.setMessage("Fetching medias");
+                mDownloadProgressDialog.setCancelable(false);
+                mDownloadProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mBebopDrone.cancelGetLastFlightMedias();
+                    }
+                });
+                mDownloadProgressDialog.show();
+            }
+        });
+    }
+
+    private void mapTakePictureButton() {
+        findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.takePicture();
+            }
+        });
+    }
+
+    void mapTakeoffLandButton() {
+        mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
+        mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                switch (mBebopDrone.getFlyingState()) {
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED:
+                        mBebopDrone.takeOff();
+                        break;
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING:
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING:
+                        mBebopDrone.land();
+                        break;
+                    default:
+                }
+            }
+        });
+    }
+
+    void mapEmergencyButton() {
+        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.emergency();
+            }
+        });
+    }
+
+    void mapVideoViewButton() {
+        mVideoView = (BebopVideoView) findViewById(R.id.videoView);
     }
 
     private final BebopDroneListener mBebopListener = new BebopDroneListener() {
