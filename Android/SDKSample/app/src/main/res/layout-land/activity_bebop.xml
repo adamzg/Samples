@@ -169,4 +169,13 @@
         android:layout_alignRight="@+id/gazDownBt"
         android:layout_alignEnd="@+id/gazDownBt"
         android:gravity="center_horizontal"/>
+
+    <Button
+        android:id="@+id/myBt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/batteryLabel"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/batteryLabel"
+        android:text="MyButton" />
 </RelativeLayout>

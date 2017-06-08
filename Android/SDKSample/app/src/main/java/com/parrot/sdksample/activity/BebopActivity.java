@@ -36,6 +36,7 @@ public class BebopActivity extends AppCompatActivity {
 
     private TextView mBatteryLabel;
     private Button mTakeOffLandBt;
+    private Button mMyBt;
     private Button mDownloadBt;
 
     private int mNbMaxDownload;
@@ -111,6 +112,8 @@ public class BebopActivity extends AppCompatActivity {
         mapEmergencyButton();
 
         mapTakeoffLandButton();
+
+        mapMyButton();
 
         mapTakePictureButton();
 
@@ -386,6 +389,40 @@ public class BebopActivity extends AppCompatActivity {
                         mBebopDrone.land();
                         break;
                     default:
+                }
+            }
+        });
+    }
+
+    void mapMyButton() {
+        mMyBt = (Button) findViewById(R.id.myBt);
+        mMyBt.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                switch (mBebopDrone.getFlyingState()) {
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED:
+                        mBebopDrone.takeOff();
+                        waitABit();
+                        mBebopDrone.setYaw((byte) 50);
+                        waitABit();
+                        mBebopDrone.setYaw((byte) -50);
+                        waitABit();
+                        mBebopDrone.setYaw((byte) 0);
+                        mBebopDrone.land();
+                        break;
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING:
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING:
+                        mBebopDrone.land();
+                        break;
+                    default:
+                }
+            }
+
+            void waitABit() {
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e) {
+                    Exception myException = new RuntimeException("interrupted taking off.", e);
+                    myException.printStackTrace();
                 }
             }
         });
